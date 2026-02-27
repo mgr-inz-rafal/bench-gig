@@ -13,7 +13,8 @@ criterion_group!(
 criterion_group!(
     cache_line_benches,
     cache_line::bench_not_padded,
-    cache_line::bench_padded
+    cache_line::bench_padded,
+    cache_line::bench_crossbeam_padded
 );
 
 criterion_main!(find_oldest_benches, cache_line_benches);

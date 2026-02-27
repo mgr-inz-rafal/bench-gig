@@ -1,4 +1,7 @@
-use bench_core::cache_line::{PaddedCacheLine, SharedCacheLine, run_padded, run_shared};
+use bench_core::cache_line::{
+    CrossBeamCacheLine, PaddedCacheLine, SharedCacheLine, run_crossbeam_padded, run_padded,
+    run_shared,
+};
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, sync::Arc};
 
@@ -20,5 +23,19 @@ pub fn bench_padded(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_not_padded, bench_padded);
+pub fn bench_crossbeam_padded(c: &mut Criterion) {
+    c.bench_function("cache_line_crossbeam_padded", |b| {
+        b.iter(|| {
+            let counters = Arc::new(CrossBeamCacheLine::new());
+            run_crossbeam_padded(black_box(counters));
+        })
+    });
+}
+
+criterion_group!(
+    benches,
+    bench_not_padded,
+    bench_padded,
+    bench_crossbeam_padded
+);
 criterion_main!(benches);
