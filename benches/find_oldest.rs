@@ -4,7 +4,9 @@
 
 use std::hint::black_box;
 
-use bench_core::Foo;
+use bench_core::foo::{
+    Foo, find_oldest, find_oldest_alternative, find_oldest_alternative_with_hint,
+};
 use criterion::{Criterion, criterion_group, criterion_main};
 use rand::seq::SliceRandom;
 
@@ -16,7 +18,7 @@ pub fn bench_find_oldest(c: &mut Criterion) {
 
     let _oldest = c.bench_function("find_oldest", |b| {
         data.shuffle(&mut rng);
-        b.iter(|| black_box(bench_core::find_oldest(black_box(&data))))
+        b.iter(|| black_box(find_oldest(black_box(&data))))
     });
 }
 
@@ -28,7 +30,7 @@ pub fn bench_find_oldest_alternative(c: &mut Criterion) {
 
     let _oldest = c.bench_function("find_oldest_alternative", |b| {
         data.shuffle(&mut rng);
-        b.iter(|| black_box(bench_core::find_oldest_alternative(black_box(&data))))
+        b.iter(|| black_box(find_oldest_alternative(black_box(&data))))
     });
 }
 
@@ -40,11 +42,7 @@ pub fn bench_find_oldest_alternative_with_hint(c: &mut Criterion) {
 
     let _oldest = c.bench_function("find_oldest_alternative_with_hint", |b| {
         data.shuffle(&mut rng);
-        b.iter(|| {
-            black_box(bench_core::find_oldest_alternative_with_hint(black_box(
-                &data,
-            )))
-        })
+        b.iter(|| black_box(find_oldest_alternative_with_hint(black_box(&data))))
     });
 }
 

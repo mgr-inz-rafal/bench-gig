@@ -1,4 +1,4 @@
-use bench_core::Foo;
+use bench_core::foo::Foo;
 use rand;
 
 fn main() {
