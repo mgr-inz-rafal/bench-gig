@@ -1,29 +1,33 @@
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
 pub struct SharedCacheLine {
-    pub a: u64,
-    pub b: u64,
-}
-
-pub struct PaddedCacheLine {
-    pub a: u64,
-    _pad: [u8; 56],
-    pub b: u64,
+    pub a: AtomicU64,
+    pub b: AtomicU64,
 }
 
 impl SharedCacheLine {
     pub fn new() -> Self {
-        Self { a: 0, b: 0 }
+        Self {
+            a: AtomicU64::new(0),
+            b: AtomicU64::new(0),
+        }
     }
+}
+
+pub struct PaddedCacheLine {
+    pub a: AtomicU64,
+    _pad: [u8; 56],
+    pub b: AtomicU64,
 }
 
 impl PaddedCacheLine {
     pub fn new() -> Self {
         Self {
-            a: 0,
+            a: AtomicU64::new(0),
             _pad: [0u8; 56],
-            b: 0,
+            b: AtomicU64::new(0),
         }
     }
 }
@@ -36,19 +40,15 @@ pub fn run_shared(counters: Arc<SharedCacheLine>) {
 
     let t1 = thread::spawn(move || {
         for _ in 0..ITERATIONS {
-            unsafe {
-                let ptr = &c1.a as *const u64 as *mut u64;
-                ptr.write_volatile(ptr.read_volatile().wrapping_add(1));
-            }
+            let v = c1.a.load(Ordering::Relaxed);
+            c1.a.store(v.wrapping_add(1), Ordering::Relaxed);
         }
     });
 
     let t2 = thread::spawn(move || {
         for _ in 0..ITERATIONS {
-            unsafe {
-                let ptr = &c2.b as *const u64 as *mut u64;
-                ptr.write_volatile(ptr.read_volatile().wrapping_add(1));
-            }
+            let v = c2.b.load(Ordering::Relaxed);
+            c2.b.store(v.wrapping_add(1), Ordering::Relaxed);
         }
     });
 
@@ -62,19 +62,15 @@ pub fn run_padded(counters: Arc<PaddedCacheLine>) {
 
     let t1 = thread::spawn(move || {
         for _ in 0..ITERATIONS {
-            unsafe {
-                let ptr = &c1.a as *const u64 as *mut u64;
-                ptr.write_volatile(ptr.read_volatile().wrapping_add(1));
-            }
+            let v = c1.a.load(Ordering::Relaxed);
+            c1.a.store(v.wrapping_add(1), Ordering::Relaxed);
         }
     });
 
     let t2 = thread::spawn(move || {
         for _ in 0..ITERATIONS {
-            unsafe {
-                let ptr = &c2.b as *const u64 as *mut u64;
-                ptr.write_volatile(ptr.read_volatile().wrapping_add(1));
-            }
+            let v = c2.b.load(Ordering::Relaxed);
+            c2.b.store(v.wrapping_add(1), Ordering::Relaxed);
         }
     });
 
